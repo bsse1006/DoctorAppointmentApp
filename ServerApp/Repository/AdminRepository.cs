@@ -15,9 +15,9 @@ namespace ServerApp.Repository
             return admin;
         }
 
-        public Admin Get()
+        public Admin GetByUsername(string adminUsername)
         {
-            return DatabaseContext.admins.ElementAtOrDefault(0);
+            return DatabaseContext.admins.SingleOrDefault(admin => admin.username == adminUsername);
         }
 
         public Admin Update(Admin admin)

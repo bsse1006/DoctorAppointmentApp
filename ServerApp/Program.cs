@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Session;
 
 namespace ServerApp
 {
