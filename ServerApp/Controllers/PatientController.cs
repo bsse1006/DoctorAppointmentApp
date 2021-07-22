@@ -32,7 +32,10 @@ namespace ServerApp.Controllers
             {
                 if (patientRepository.GetByEmail(userCred.email).password == userCred.password)
                 {
-                    loggedInPatients.AddLoggedInPatients(userCred.email);
+                    if (!loggedInPatients.checkIfLoggedIn(userCred.email))
+                    {
+                        loggedInPatients.AddLoggedInPatients(userCred.email);
+                    }
                     return Ok(userCred);
                 }
                 else

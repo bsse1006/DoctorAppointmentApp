@@ -54,7 +54,10 @@ namespace ServerApp.Controllers
             {
                 if (adminRepository.GetByUsername(adminCred.username).password == adminCred.password)
                 {
-                    loggedInAdmins.AddLoggedInAdmins(adminCred.username);
+                    if (!loggedInAdmins.checkIfLoggedIn(adminCred.username))
+                    {
+                        loggedInAdmins.AddLoggedInAdmins(adminCred.username);
+                    }
                     return Ok(adminCred);
                 }
                 else
