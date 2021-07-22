@@ -16,10 +16,25 @@ namespace ServerApp.Controllers
         private readonly AdminRepository adminRepository = new AdminRepository();
 
         private LoggedInAdmins loggedInAdmins;
+        private LoggedInPatients loggedInPatients;
 
-        public AdminController(LoggedInAdmins loggedInAdmins)
+        public AdminController(LoggedInAdmins loggedInAdmins, LoggedInPatients loggedInPatients)
         {
             this.loggedInAdmins = loggedInAdmins;
+            this.loggedInPatients = loggedInPatients;
+        }
+
+        [HttpGet("api/admin/onlinedata")]
+        public IActionResult OnlineData(string adminName)
+        {
+            if (loggedInAdmins.checkIfLoggedIn(adminName))
+            {
+                return Ok(loggedInPatients.patients);
+            }
+            else
+            {
+                return Ok();
+            }
         }
 
         public class AdminCred
@@ -46,6 +61,20 @@ namespace ServerApp.Controllers
                 {
                     return Ok();
                 }
+            }
+        }
+
+        [HttpGet("api/admin/signout")]
+        public IActionResult SignOut(string adminName)
+        {
+            if (loggedInAdmins.checkIfLoggedIn(adminName))
+            {
+                loggedInAdmins.RemoveLoggedInAdmins(adminName);
+                return Ok();
+            }
+            else
+            {
+                return Ok();
             }
         }
 

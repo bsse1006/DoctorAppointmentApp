@@ -42,6 +42,20 @@ namespace ServerApp.Controllers
             }
         }
 
+        [HttpGet("api/patient/signout")]
+        public IActionResult SignOut(string userName)
+        {
+            if (loggedInPatients.checkIfLoggedIn(userName))
+            {
+                loggedInPatients.RemoveLoggedInPatients(userName);
+                return Ok();
+            }
+            else
+            {
+                return Ok();
+            }
+        }
+
         public class UserCred
         {
             public string email { get; set; }
