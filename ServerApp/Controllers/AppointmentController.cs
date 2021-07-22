@@ -5,33 +5,40 @@ using ServerApp.Repository;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ServerApp.Service;
 
 namespace ServerApp.Controllers
 {
-    class AppointmentController : Controller
+    public class AppointmentController : Controller
     {
         private readonly AppointmentRepository appointmentRepository = new AppointmentRepository();
+        private LoggedInPatients loggedInPatients;
+
+        public AppointmentController(LoggedInPatients loggedInPatients)
+        {
+            this.loggedInPatients = loggedInPatients;
+        }
 
         [HttpPost("api/appointment/add")]
-        public IActionResult AddAppointment([FromBody] Appointment appointment)
+        public IActionResult AddAppointment([FromBody] Appointment appointment, string userName)
         {
-            var usertype = HttpContext.Session.GetString("usertype");
-            if (usertype == "patient")
+            if (loggedInPatients.checkIfLoggedIn(userName))
             {
                 var addedAppointment = appointmentRepository.Add(appointment);
                 return Ok(addedAppointment);
             }
             else
             {
-                return BadRequest();
+                return Ok();
             }
         }
 
         //security flaw
-        [HttpGet("api/appointment/getByID")]
-        public IActionResult GetAppointmentById(int appointmentID)
+        [HttpGet("api/appointment/getById")]
+        public IActionResult GetAppointmentById()//int appointmentID)
         {
-            var usertype = HttpContext.Session.GetString("usertype");
+            return Ok();
+            /*var usertype = HttpContext.Session.GetString("usertype");
             if (usertype != null)
             {
                 var appointment = appointmentRepository.GetByID(appointmentID);
@@ -40,10 +47,10 @@ namespace ServerApp.Controllers
             else
             {
                 return BadRequest();
-            }
+            }*/
         }
 
-        [HttpGet("api/appointment/getByDoctorID")]
+        [HttpGet("api/appointment/getByDoctorId")]
         public IActionResult GetAppointmentByDoctorId(int doctorID)
         {
             var usertype = HttpContext.Session.GetString("usertype");
@@ -59,18 +66,17 @@ namespace ServerApp.Controllers
         }
 
         //security flaw
-        [HttpGet("api/appointment/getByPatientID")]
-        public IActionResult GetAppointmentByPatientId(int patientID)
+        [HttpGet("api/appointment/getByPatientId")]
+        public IActionResult GetAppointmentByPatientId(int patientID, string userName)
         {
-            var usertype = HttpContext.Session.GetString("usertype");
-            if (usertype != null)
+            if (loggedInPatients.checkIfLoggedIn(userName))
             {
-                var appointment = appointmentRepository.GetByPatientID(patientID);
-                return Ok(appointment);
+                var appointments = appointmentRepository.GetByPatientID(patientID);
+                return Ok(appointments);
             }
             else
             {
-                return BadRequest();
+                return Ok();
             }
         }
 
@@ -89,24 +95,22 @@ namespace ServerApp.Controllers
         }
 
         [HttpPost("api/appointment/update")]
-        public IActionResult UpdateAppointment([FromBody] Appointment appointment)
+        public IActionResult UpdateAppointment([FromBody] Appointment appointment, string userName)
         {
-            var usertype = HttpContext.Session.GetString("usertype");
-            if (usertype == "patient")
+            if (loggedInPatients.checkIfLoggedIn(userName))
             {
                 return Ok(appointmentRepository.Update(appointment));
             }
             else
             {
-                return BadRequest();
+                return Ok();
             }
         }
 
         [HttpGet("api/appointment/delete")]
-        public IActionResult DeleteAppointment(int appointmentId)
+        public IActionResult DeleteAppointment(string userName, int appointmentId)
         {
-            var usertype = HttpContext.Session.GetString("usertype");
-            if (usertype == "patient")
+            if (loggedInPatients.checkIfLoggedIn(userName))
             {
                 var appointment = appointmentRepository.GetByID(appointmentId);
                 appointmentRepository.Delete(appointment);
@@ -114,7 +118,7 @@ namespace ServerApp.Controllers
             }
             else
             {
-                return BadRequest();
+                return Ok();
             }
         }
     }

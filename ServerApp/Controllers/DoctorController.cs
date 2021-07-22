@@ -6,55 +6,57 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Session;
 using ServerApp.Model;
 using ServerApp.Repository;
+using ServerApp.Service;
 
 namespace ServerApp.Controllers
 {
     public class DoctorController : Controller
     {
         private readonly DoctorRepository doctorRepository = new DoctorRepository();
-        /*private readonly IHttpContextAccessor httpContextAccessor;
-        private ISession session => httpContextAccessor.HttpContext.Session;
+        private LoggedInAdmins loggedInAdmins;
+        private LoggedInPatients loggedInPatients;
 
-        public DoctorController(IHttpContextAccessor httpContextAccessor)
+        public DoctorController(LoggedInAdmins loggedInAdmins, LoggedInPatients loggedInPatients)
         {
-            this.httpContextAccessor = httpContextAccessor;
-        }*/
+            this.loggedInAdmins = loggedInAdmins;
+            this.loggedInPatients = loggedInPatients;
+        }
 
         [HttpPost("api/doctor/add")]
-        public IActionResult AddDoctor([FromBody] Doctor doctor)
+        public IActionResult AddDoctor([FromBody] Doctor doctor, string adminName)
         {
-            var usertype = HttpContext.Session.GetString("usertype");
-            if (usertype == "admin")
+            if (loggedInAdmins.checkIfLoggedIn(adminName))
             {
                 var addedDoctor = doctorRepository.Add(doctor);
                 return Ok(addedDoctor);
             }
             else
             {
-                return BadRequest();
+                return Ok();
             }
         }
 
-        [HttpGet("api/doctor/getByID")]
-        public IActionResult GetDoctorById(int doctorID)
+        [HttpGet("api/doctor/getById")]
+        public IActionResult GetDoctorById(string userName, int doctorId)
         {
-            var usertype = HttpContext.Session.GetString("usertype");
-            if (usertype != null)
+            if (loggedInAdmins.checkIfLoggedIn(userName) || loggedInPatients.checkIfLoggedIn(userName))
             {
-                var doctor = doctorRepository.GetByID(doctorID);
+                var doctor = doctorRepository.GetByID(doctorId);
+                //Console.WriteLine(doctor.name);
                 return Ok(doctor);
             }
             else
             {
-                return BadRequest();
+                return Ok();
             }
         }
 
         [HttpGet("api/doctor/getByName")]
-        public IActionResult GetDoctorByName(string doctorName)
+        public IActionResult GetDoctorByName()//string doctorName)
         {
-            var doctor = doctorRepository.GetByName(doctorName);
-            return Ok(doctor);
+            return Ok();
+            /*var doctor = doctorRepository.GetByName(doctorName);
+            return Ok(doctor);*/
             /*var usertype = HttpContext.Session.GetString("usertype");
             if (usertype != null)
             {
@@ -68,41 +70,35 @@ namespace ServerApp.Controllers
         }
 
         [HttpGet("api/doctor/getAll")]
-        public IActionResult GetAllDoctors()
+        public IActionResult GetAllDoctors(string userName)
         {
-            Console.WriteLine("Session Value Out:");
-            //Console.WriteLine(session.GetString("usertype"));
-            return Ok(doctorRepository.GetAll());
-            /*var usertype = HttpContext.Session.GetString("usertype");
-            if (usertype != null)
+            if (loggedInAdmins.checkIfLoggedIn(userName) || loggedInPatients.checkIfLoggedIn(userName))
             {
                 return Ok(doctorRepository.GetAll());
             }
             else
             {
-                return BadRequest();
-            }*/
+                return Ok();
+            }
         }
 
         [HttpPost("api/doctor/update")]
-        public IActionResult UpdateDoctor([FromBody] Doctor doctor)
+        public IActionResult UpdateDoctor([FromBody] Doctor doctor, string adminName)
         {
-            var usertype = HttpContext.Session.GetString("usertype");
-            if (usertype == "admin")
+            if (loggedInAdmins.checkIfLoggedIn(adminName))
             {
                 return Ok(doctorRepository.Update(doctor));
             }
             else
             {
-                return BadRequest();
+                return Ok();
             }
         }
 
         [HttpGet("api/doctor/delete")]
-        public IActionResult DeleteDoctor(int doctorId)
+        public IActionResult DeleteDoctor(string adminName, int doctorId)
         {
-            var usertype = HttpContext.Session.GetString("usertype");
-            if (usertype == "admin")
+            if (loggedInAdmins.checkIfLoggedIn(adminName))
             {
                 var doctor = doctorRepository.GetByID(doctorId);
                 doctorRepository.Delete(doctor);
@@ -110,7 +106,7 @@ namespace ServerApp.Controllers
             }
             else
             {
-                return BadRequest();
+                return Ok();
             }
         }
     }

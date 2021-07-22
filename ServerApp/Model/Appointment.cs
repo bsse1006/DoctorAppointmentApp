@@ -16,6 +16,6 @@ namespace ServerApp.Model
 
         public int patientID { get; set; }
 
-        public DateTime time { get; set; }
+        public string time { get; set; }
     }
 }

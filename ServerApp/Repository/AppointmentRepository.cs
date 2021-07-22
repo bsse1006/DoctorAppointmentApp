@@ -30,12 +30,13 @@ namespace ServerApp.Repository
             return DatabaseContext.appointments.SingleOrDefault(appointment => appointment.doctorID == doctorID);
         }
 
-        public Appointment GetByPatientID(int patientID)
+        public List<Appointment> GetByPatientID(int patientID)
         {
-            return DatabaseContext.appointments.SingleOrDefault(appointment => appointment.patientID == patientID);
+            return DatabaseContext.appointments.Where(appointment => appointment.patientID == patientID).ToList();
+            //return DatabaseContext.appointments.SingleOrDefault(appointment => appointment.patientID == patientID);
         }
 
-        public Appointment GetByTime(DateTime appointmentTime)
+        public Appointment GetByTime(string appointmentTime)
         {
             return DatabaseContext.appointments.SingleOrDefault(appointment => appointment.time==appointmentTime);
         }

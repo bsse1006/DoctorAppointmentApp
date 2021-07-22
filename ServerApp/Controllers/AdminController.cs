@@ -7,12 +7,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Session;
 using ServerApp.Model;
 using ServerApp.Repository;
+using ServerApp.Service;
 
 namespace ServerApp.Controllers
 {
     public class AdminController : Controller
     {
         private readonly AdminRepository adminRepository = new AdminRepository();
+
+        private LoggedInAdmins loggedInAdmins;
+
+        public AdminController(LoggedInAdmins loggedInAdmins)
+        {
+            this.loggedInAdmins = loggedInAdmins;
+        }
 
         public class AdminCred
         {
@@ -31,9 +39,7 @@ namespace ServerApp.Controllers
             {
                 if (adminRepository.GetByUsername(adminCred.username).password == adminCred.password)
                 {
-                    HttpContext.Session.SetString("usertype", "admin");
-                    Console.WriteLine("Session Value In:");
-                    Console.WriteLine(HttpContext.Session.GetString("usertype").ToString());
+                    loggedInAdmins.AddLoggedInAdmins(adminCred.username);
                     return Ok(adminCred);
                 }
                 else
@@ -44,12 +50,11 @@ namespace ServerApp.Controllers
         }
 
         [HttpGet("api/admin/getByUsername")]
-        public IActionResult GetAdminByUsername(string username)
+        public IActionResult GetAdminByUsername(string adminName)
         {
-            var usertype = HttpContext.Session.GetString("usertype");
-            if (usertype == "admin")
+            if (loggedInAdmins.checkIfLoggedIn(adminName))
             {
-                return Ok(adminRepository.GetByUsername(username));
+                return Ok(adminRepository.GetByUsername(adminName));
             }
             else
             {
@@ -58,12 +63,9 @@ namespace ServerApp.Controllers
         }
 
         [HttpPost("api/admin/add")]
-        public IActionResult AddAdmin([FromBody] Admin admin)
+        public IActionResult AddAdmin([FromBody] Admin admin, string adminName)
         {
-            /*var addedAdmin = adminRepository.Add(admin);
-            return Ok(addedAdmin);*/
-            var usertype = HttpContext.Session.GetString("usertype");
-            if (usertype == "admin")
+            if (loggedInAdmins.checkIfLoggedIn(adminName))
             {
                 var addedAdmin = adminRepository.Add(admin);
                 return Ok(addedAdmin);
@@ -75,10 +77,9 @@ namespace ServerApp.Controllers
         }
 
         [HttpPost("api/admin/update")]
-        public IActionResult UpdateAdmin([FromBody] Admin admin)
+        public IActionResult UpdateAdmin([FromBody] Admin admin, string adminName)
         {
-            var usertype = HttpContext.Session.GetString("usertype");
-            if (usertype == "admin")
+            if (loggedInAdmins.checkIfLoggedIn(adminName))
             {
                 return Ok(adminRepository.Update(admin));
             }

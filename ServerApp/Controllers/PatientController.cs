@@ -6,12 +6,20 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ServerApp.Model;
 using ServerApp.Repository;
+using ServerApp.Service;
 
 namespace ServerApp.Controllers
 {
     public class PatientController : Controller
     {
         private readonly PatientRepository patientRepository = new PatientRepository();
+
+        private LoggedInPatients loggedInPatients;
+
+        public PatientController(LoggedInPatients loggedInPatients)
+        {
+            this.loggedInPatients = loggedInPatients;
+        }
 
         [HttpPost("api/patient/authenticate")]
         public IActionResult Authenticate([FromBody] UserCred userCred)
@@ -24,7 +32,7 @@ namespace ServerApp.Controllers
             {
                 if (patientRepository.GetByEmail(userCred.email).password == userCred.password)
                 {
-                    HttpContext.Session.SetString("usertype", "patient");
+                    loggedInPatients.AddLoggedInPatients(userCred.email);
                     return Ok(userCred);
                 }
                 else
@@ -48,12 +56,11 @@ namespace ServerApp.Controllers
         }
 
         [HttpGet("api/patient/getByEmail")]
-        public IActionResult GetPatientByEmail(string patientEmail)
+        public IActionResult GetPatientByEmail(string userName)
         {
-            var usertype = HttpContext.Session.GetString("usertype");
-            if (usertype!=null)
+            if (loggedInPatients.checkIfLoggedIn(userName))
             {
-                var patient = patientRepository.GetByEmail(patientEmail);
+                var patient = patientRepository.GetByEmail(userName);
                 return Ok(patient);
             }
             else
@@ -92,11 +99,18 @@ namespace ServerApp.Controllers
             }
         }
 
-        /*[HttpPost("api/patient/update")]
-        public IActionResult UpdatePatient([FromBody] Patient patient)
+        [HttpPost("api/patient/update")]
+        public IActionResult UpdatePatient([FromBody] Patient patient, string userName)
         {
-            return Ok(patientRepository.Update(patient));
-        }*/
+            if (loggedInPatients.checkIfLoggedIn(userName))
+            {
+                return Ok(patientRepository.Update(patient));
+            }
+            else
+            {
+                return Ok();
+            }
+        }
 
         /*[HttpGet("api/patient/delete")]
         public IActionResult DeletePatient(int patientID)
