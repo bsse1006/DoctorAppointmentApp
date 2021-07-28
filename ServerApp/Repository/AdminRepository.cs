@@ -15,6 +15,11 @@ namespace ServerApp.Repository
             return admin;
         }
 
+        public List<Admin> GetAll()
+        {
+            return DatabaseContext.admins.ToList();
+        }
+
         public Admin GetByUsername(string adminUsername)
         {
             return DatabaseContext.admins.SingleOrDefault(admin => admin.username == adminUsername);

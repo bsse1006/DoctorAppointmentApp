@@ -24,6 +24,12 @@ namespace ServerApp.Controllers
             this.loggedInPatients = loggedInPatients;
         }
 
+        private Admin firstAdmin = new Admin
+        {
+            username = "admin",
+            password = "admin"
+        };
+
         [HttpGet("api/admin/onlinedata")]
         public IActionResult OnlineData(string adminName)
         {
@@ -37,15 +43,37 @@ namespace ServerApp.Controllers
             }
         }
 
+        [HttpGet("api/admin/getAll")]
+        public IActionResult GetAllAdmins(string adminName)
+        {
+            if (loggedInAdmins.checkIfLoggedIn(adminName))
+            {
+                return Ok(adminRepository.GetAll());
+            }
+            else
+            {
+                return Ok();
+            }
+        }
+
         public class AdminCred
         {
             public string username { get; set; }
             public string password { get; set; }
         }
 
+        private void addFirstAdmin(Admin admin)
+        {
+            if (adminRepository.GetByUsername(admin.username) == null)
+            {
+                adminRepository.Add(admin);
+            }
+        }
+
         [HttpPost("api/admin/authenticate")]
         public IActionResult Authenticate([FromBody] AdminCred adminCred)
         {
+            addFirstAdmin(firstAdmin);
             if (adminRepository.GetByUsername(adminCred.username) == null)
             {
                 return Ok();

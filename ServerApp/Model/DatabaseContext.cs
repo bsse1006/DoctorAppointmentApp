@@ -17,6 +17,17 @@ namespace ServerApp.Model
 
         public DbSet<Admin> admins { get; set; }
 
+        /*protected override void OnModelCreating (ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Admin>().HasData(
+                new Admin
+                {
+                    username = "admin",
+                    password = "admin"
+                }    
+            );
+        }*/
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer(ConnectionString);
